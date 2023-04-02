@@ -6,6 +6,9 @@ const chatContainer = document.querySelector('#chat_container');
 const serverApi = "http://localhost:5000/";
 
 let loadInterval;
+let messages = [
+  {"role": "system", "content": "You are a helpful programming assistant"},
+]
 
 /**
  * This will show ... as a loading animation when processing
@@ -91,6 +94,9 @@ const handleSubmit = async (e) => {
   chatContainer.innerHTML += chatStripe(false, data.get('prompt'));
   form.reset();
 
+  // record user input
+  messages.push({"role": "user", "content": data.get('prompt')});
+
   //BotChat stripe
   const uniqueId = generateUniqueId();
   chatContainer.innerHTML += chatStripe(true, " ", uniqueId);
@@ -107,7 +113,7 @@ const handleSubmit = async (e) => {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      prompt: data.get('prompt')
+      messages
     }),
   })
 
@@ -119,6 +125,9 @@ const handleSubmit = async (e) => {
     const data = await response.json();
     const parsedData = data.bot.trim();
 
+    // record bot answer
+    messages.push({"role": "assistant", "content": data.bot});
+    
     typeText(messageDiv, parsedData);
   } else {
     const err = response.text();
